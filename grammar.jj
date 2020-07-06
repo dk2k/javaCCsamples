@@ -1,0 +1,91 @@
+options
+{
+    STATIC = false;
+}
+PARSER_BEGIN (SqlParser)
+   //package ru.outofrange.javacc.createtable;
+   import java.util.ArrayList;
+   import java.util.HashMap;
+ 
+   class SqlParser {
+         ArrayList<TableStruct> initParser() throws ParseException, TokenMgrError { 
+             return(init()) ; 
+         }
+   }
+PARSER_END (SqlParser)
+ 
+SKIP: { "\n" | "\r" | "\r\n" | "\\" | "\t" | " "}
+ 
+TOKEN [IGNORE_CASE]:
+{
+ <ctcmd :("create table")>
+|<number :(["0"-"9"])+>
+|<tname: (["a"-"z"])+>
+|<obra: ("(")+>
+|<cbra: (")")+>
+|<comma: (",")>
+}
+ 
+SPECIAL_TOKEN : {<comment: ("#")+(<tname>)+("#")>}
+ 
+ArrayList<TableStruct> init():
+{
+  Token T;
+  ArrayList<TableStruct> tableList = new ArrayList<TableStruct>();
+  TableStruct tableStruct;
+}
+{
+  (
+       <ctcmd>
+       T =<tname>
+       {    tableStruct = new TableStruct ();
+       tableStruct.TableName = T.image ;}
+       <obra>
+       tableStruct.Variables = Variables()
+       <cbra>
+      {tableList.add (tableStruct) ; /*System.out.println("new variable desc added");*/}
+  )*
+  <EOF>
+  {return tableList;}
+}
+ 
+HashMap<String, TypeDesc> Variables():
+{
+   Token TName;
+   TypeDesc typeDesc;
+   HashMap <String, TypeDesc> var = new HashMap <String, TypeDesc>();
+}
+{
+  ( 
+      TName = <tname>
+      typeDesc = DType()
+      {var.put(TName.image, typeDesc); /*System.out.println("new struct populated < " + TName.image + ">");*/}
+      (   <comma> TName = <tname> 
+          typeDesc = DType() 
+          {var.put(TName.image, typeDesc); /*System.out.println("[Recursion] new struct populated <" + TName.image + ">");*/}
+      )*
+  )
+  {return var;}
+}
+ 
+TypeDesc DType():
+{
+   Token TDType;
+   TypeDesc typeDesc;
+   Token length = null;
+}
+{
+  (
+    TDType=<tname>
+    [<obra> length=<number> <cbra> ]
+  )
+   {
+       typeDesc = new TypeDesc();
+       typeDesc.setTypeName(TDType.image);
+       if (length != null) {
+           typeDesc.setTypeLength(length.image); /*System.out.println("Lenght detected < " + length.image + ">");*/
+       }
+ 
+       return typeDesc;
+   }
+}
