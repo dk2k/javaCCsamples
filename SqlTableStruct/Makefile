@@ -1,4 +1,4 @@
-JAVACC_JAR = /home/dk/javacc_6_1/javacc-6.1.0/target/javacc-7.0.9.jar
+JAVACC_JAR = /home/dk/javacc_7_0_9/javacc-7.0.9/target/javacc-7.0.9.jar
 SOURCE_NAME=grammar
  
 all: TableStruct.java TypeDesc.java ParserDemoTest.java SqlParser.java
